@@ -1,0 +1,31 @@
+from flask import Flask, g, jsonify
+import time
+from config import Config
+from app.authgear import init_oauth
+from app.extension import bcrypt, cors, ma
+from app.auth import auth_bp
+from app.users import users_bp
+
+def create_app(config_Class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_Class)
+    
+    #инициализация расширений
+    bcrypt.init_app(app)
+    cors.init_app(app)
+    ma.init_app(app)
+    init_oauth(app)
+
+
+    #регистрация blueprints
+    app.register_blueprint(auth_bp, url_prefix = '/auth')
+    app.register_blueprint(users_bp, url_prefix = '/users')
+
+    @app.errorhandler(Exception)
+    def hendle_experere(e):
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}),500
+
+    return app
+
