@@ -15,12 +15,14 @@ auth_bp = Blueprint('auth', __name__)
 def login():
     #генерим рандомною строку
     state = secrets.token_urlsafe(16)
+    nonce = secrets.token_urlsafe(16)
     print(f'Generated state: {state}')
     #сохряет стате в сессии, что бы проверять на возврате
     session['oauth_state'] = state
+    session.get('oauth_nonce') = nonce
     print("Session saved, session ID:", session.sid if hasattr(session, 'sid') else 'no sid')
     redirect_uri = current_app.config['AUTHGEAR_REDIRECT_URI']
-    return oauth.authgear.authorize_redirect(redirect_uri, state=state)
+    return oauth.authgear.authorize_redirect(redirect_uri, state=state, nonce=nonce)
 
 
 @auth_bp.route('/callback')
@@ -47,7 +49,7 @@ def callback():
     print("=== Debug: client_id =", current_app.config['AUTHGEAR_CLIENT_ID'])
     print("=== Debug: secret length =", len(current_app.config['AUTHGEAR_CLIENT_SECRET']))
     #извлечение информации user'а из ID-токена (JWT)
-    user_info = oauth.authgear.parse_id_token(token)
+    user_info = oauth.authgear.parse_id_token(token,nonce=session.get('oauth_nonce'))
     
     authgear_id = user_info['sub'] #айди пользователя
     email = user_info['email'] #email user
