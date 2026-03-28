@@ -5,12 +5,14 @@ from app.authgear import init_oauth
 from app.extension import bcrypt, cors, ma
 from app.auth import auth_bp
 from app.users import users_bp
+from flask_session import Session
 
 def create_app(config_Class=Config):
     app = Flask(__name__)
     app.config.from_object(config_Class)
     
     #инициализация расширений
+    Session(app)
     bcrypt.init_app(app)
     cors.init_app(app)
     ma.init_app(app)

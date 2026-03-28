@@ -18,7 +18,7 @@ def login():
     print(f'Generated state: {state}')
     #сохряет стате в сессии, что бы проверять на возврате
     session['oauth_state'] = state
-    print(f'Session after set: {dict(session)}')
+    print("Session saved, session ID:", session.sid if hasattr(session, 'sid') else 'no sid')
     redirect_uri = current_app.config['AUTHGEAR_REDIRECT_URI']
     return oauth.authgear.authorize_redirect(redirect_uri, state=state)
 
@@ -42,7 +42,8 @@ def callback():
     except OAuthError as e:
         return jsonify({"error": f"authorizstion failed: {e.error}"}), 400
     
-
+    print("Session state in callback:", session.get('oauth_state'))
+    print("Full session keys:", list(session.keys()))
     print("=== Debug: client_id =", current_app.config['AUTHGEAR_CLIENT_ID'])
     print("=== Debug: secret length =", len(current_app.config['AUTHGEAR_CLIENT_SECRET']))
     #извлечение информации user'а из ID-токена (JWT)
@@ -51,7 +52,7 @@ def callback():
     authgear_id = user_info['sub'] #айди пользователя
     email = user_info['email'] #email user
     name = user_info['name']
-
+    print("Cookies:", request.cookies)
     #ищем пользователя по id
     user = find_user_by_authID(authgear_id)
     if not user:
@@ -62,9 +63,11 @@ def callback():
     session['user_id'] = user['id'] # сохранение локального айди в сессии
     return redirect('http://127.0.0.1:5000/dashboard') #возвращение на главный экран
 
-auth_bp.route('/logout')
+    
+
+@auth_bp.route('/logout')
 def logout():
     session.clear()
-    logout_url = f"{current_app.config['AUTHGEAR_ISSUER']}/logout?post_logout_redirect_uri=http://localhost:5000"
+    logout_url = f"{current_app.config['AUTHGEAR_ISSUER']}/logout?post_logout_redirect_uri=http://127.0.0.1:5000"
     return redirect(logout_url)
 
