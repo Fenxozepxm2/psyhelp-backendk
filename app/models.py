@@ -13,7 +13,7 @@ users = [
 
 def find_user_by_authID(authgear_id):
     for user in users:
-        if user['authgear_id'] == authgear_id:
+        if user.get('authgear_id') == authgear_id:
             return user
     return None
 

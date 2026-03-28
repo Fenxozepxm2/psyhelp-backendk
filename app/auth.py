@@ -19,7 +19,7 @@ def login():
     print(f'Generated state: {state}')
     #сохряет стате в сессии, что бы проверять на возврате
     session['oauth_state'] = state
-    session.get('oauth_nonce') = nonce
+    session['oauth_nonce'] = nonce
     print("Session saved, session ID:", session.sid if hasattr(session, 'sid') else 'no sid')
     redirect_uri = current_app.config['AUTHGEAR_REDIRECT_URI']
     return oauth.authgear.authorize_redirect(redirect_uri, state=state, nonce=nonce)
