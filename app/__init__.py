@@ -5,6 +5,7 @@ from app.authgear import init_oauth
 from app.extension import bcrypt, cors, ma
 from app.auth import auth_bp
 from app.users import users_bp
+from app.payments import payments_bp
 from flask_session import Session
 
 def create_app(config_Class=Config):
@@ -18,16 +19,20 @@ def create_app(config_Class=Config):
     ma.init_app(app)
     init_oauth(app)
 
+    print("auth_bp:", auth_bp)
+    print("users_bp:", users_bp)
+    print("payments_bp:", payments_bp)
 
     #регистрация blueprints
     app.register_blueprint(auth_bp, url_prefix = '/auth')
     app.register_blueprint(users_bp, url_prefix = '/users')
+    app.register_blueprint(payments_bp, url_prefix = '/payments')
 
-    @app.errorhandler(Exception)
-    def hendle_experere(e):
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e)}),500
+    # @app.errorhandler(Exception)
+    # def hendle_experere(e):
+    #     import traceback
+    #     traceback.print_exc()
+    #     return jsonify({"error": str(e)}),500
 
     return app
 

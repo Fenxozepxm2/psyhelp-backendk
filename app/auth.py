@@ -65,7 +65,9 @@ def callback():
     session['user_id'] = user['id'] # сохранение локального айди в сессии
     return redirect('http://127.0.0.1:5000/dashboard') #возвращение на главный экран
 
-    
+
+
+
 
 @auth_bp.route('/logout')
 def logout():
