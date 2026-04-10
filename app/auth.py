@@ -4,10 +4,12 @@ from authlib.integrations.flask_client import OAuthError
 from app.authgear import oauth
 from datetime import datetime
 from app.extension import bcrypt
-from  app.models import users, find_user_by_authID, create_user_by_authID, update_user_role
+from  app.models import Member, MemberRole, Role
 from app.sсhemas import user_schema
 from marshmallow import ValidationError
 import secrets
+from app.extension import db, migrate
+
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -32,9 +34,7 @@ def callback():
     Проверяет state, получает токен и информацию о пользователе
     """
 
-    print(f" Callback received state: {request.args.get('state')}")
-    print(f" Session state: {session.get('oauth_state')}")
-    print(f" Full session: {dict(session)}")
+    
     if request.args.get('state') != session.get('oauth_state'):
         return jsonify({"error": "invalid state parametrs"}), 400
     
@@ -63,6 +63,29 @@ def callback():
         #перенаправление на страницу выбора роли user'а
         return redirect('http://127.0.0.1:5000/choose-role')
     session['user_id'] = user['id'] # сохранение локального айди в сессии
+
+    authgear_id = user_info['sub']
+    email = user_info['email']
+    name = user_info['name']
+    # Ищем участника по auth_id
+    member = Member.query.filter_by(auth_id=authgear_id).first()
+    if not member:
+        # Создаём нового участника
+        member = Member(
+            auth_id=authgear_id,
+            username=email.split('@')[0],  # или генерируем уникальный username
+            email=email
+        )
+        db.session.add(member)
+        db.session.commit()
+        # Назначить роль по умолчанию (например, 'client') – см. ниже
+        default_role = Role.query.filter_by(code='client').first()
+        if default_role:
+            member_role = MemberRole(member_id=member.id, role_id=default_role.id)
+            db.session.add(member_role)
+            db.session.commit()
+
+    
     return redirect('http://127.0.0.1:5000/dashboard') #возвращение на главный экран
 
 

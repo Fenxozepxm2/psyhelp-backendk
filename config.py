@@ -14,5 +14,7 @@ class Config():
     SESSION_COOKIE_DOMAIN = '127.0.0.1'
     YOOKASSA_SHOP_ID = os.getenv('YOOKASSA_SHOP_ID')
     YOOKASSA_SECRET_KEY = os.getenv('YOOKASSA_SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     
